@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client as DjangoClient
 from django.urls import reverse
 
-from tests.app.models import Client, Company
+from tests.app.models import Alphabet, Country
 
 
 @pytest.fixture()
@@ -28,8 +28,8 @@ def admin_client(superuser):
 
 @pytest.mark.django_db()
 def test_boost_view_renders_context(admin_client):
-    client_obj = Client.objects.create(name="Alice")
-    url = reverse("admin:tests_app_client_hello_view", args=[client_obj.pk])
+    country_obj = Country.objects.create(name="Alice")
+    url = reverse("admin:tests_app_country_hello_view", args=[country_obj.pk])
 
     response = admin_client.get(url)
 
@@ -41,8 +41,8 @@ def test_boost_view_renders_context(admin_client):
 
 @pytest.mark.django_db()
 def test_object_tools_button_is_visible(admin_client):
-    client_obj = Client.objects.create(name="Bob")
-    change_url = reverse("admin:tests_app_client_change", args=[client_obj.pk])
+    country_obj = Country.objects.create(name="Bob")
+    change_url = reverse("admin:tests_app_country_change", args=[country_obj.pk])
 
     response = admin_client.get(change_url)
 
@@ -53,49 +53,41 @@ def test_object_tools_button_is_visible(admin_client):
 
 @pytest.mark.django_db()
 def test_raw_id_widget_is_applied(admin_client):
-    """Test that ForeignKeyRawIdWidget is applied when raw_id_fields is used."""
     from django.contrib import admin
 
-    from tests.app.admin import ClientAdmin
+    from tests.app.admin import CountryAdmin
 
-    client_obj = Client.objects.create(name="Alice")
-    Company.objects.create(name="Test Company", owner=client_obj)
+    country_obj = Country.objects.create(name="Alice")
+    Alphabet.objects.create(name="Test Alphabet", country=country_obj)
 
-    # Get the admin instance and check the form class
-    admin_instance = ClientAdmin(Client, admin.site)
+    admin_instance = CountryAdmin(Country, admin.site)
     form_class = admin_instance.RawIdForm
 
-    # Apply widgets (this is done by the decorator)
     from django_admin_boost.decorators import _apply_admin_widgets_to_form
 
-    _apply_admin_widgets_to_form(form_class, admin_instance, raw_id_fields=["company"])
+    _apply_admin_widgets_to_form(form_class, admin_instance, raw_id_fields=["alphabet"])
 
-    # Check the widget type
-    assert hasattr(form_class.base_fields["company"], "widget")
-    assert isinstance(form_class.base_fields["company"].widget, ForeignKeyRawIdWidget)
+    assert hasattr(form_class.base_fields["alphabet"], "widget")
+    assert isinstance(form_class.base_fields["alphabet"].widget, ForeignKeyRawIdWidget)
 
 
 @pytest.mark.django_db()
 def test_autocomplete_widget_is_applied(admin_client):
-    """Test that AutocompleteSelect is applied when autocomplete_fields is used."""
-    from tests.app.admin import ClientAdmin
+    from tests.app.admin import CountryAdmin
 
-    client_obj = Client.objects.create(name="Bob")
-    Company.objects.create(name="Test Company", owner=client_obj)
+    country_obj = Country.objects.create(name="Bob")
+    Alphabet.objects.create(name="Test Alphabet", country=country_obj)
 
-    # Get the admin instance and check the form class
     from django.contrib import admin
 
-    admin_instance = ClientAdmin(Client, admin.site)
+    admin_instance = CountryAdmin(Country, admin.site)
     form_class = admin_instance.AutocompleteForm
 
-    # Apply widgets (this is done by the decorator)
     from django_admin_boost.decorators import _apply_admin_widgets_to_form
 
     _apply_admin_widgets_to_form(
-        form_class, admin_instance, autocomplete_fields=["company"]
+        form_class, admin_instance, autocomplete_fields=["alphabet"]
     )
 
-    # Check the widget type
-    assert hasattr(form_class.base_fields["company"], "widget")
-    assert isinstance(form_class.base_fields["company"].widget, AutocompleteSelect)
+    assert hasattr(form_class.base_fields["alphabet"], "widget")
+    assert isinstance(form_class.base_fields["alphabet"].widget, AutocompleteSelect)

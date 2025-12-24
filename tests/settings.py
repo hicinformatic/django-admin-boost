@@ -1,14 +1,27 @@
-"Minimal Django settings for django-admin-boost tests."
-
-from __future__ import annotations
+"""Django settings for testing django-geoaddress."""
 
 import os
 from pathlib import Path
 
-from django.core.management.utils import get_random_secret_key
+try:
+    from dotenv import load_dotenv  # type: ignore[import-not-found]
 
-BASE_DIR = Path(__file__).resolve().parent
-SECRET_KEY = os.environ.get("SECRET_KEY", get_random_secret_key())
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"✓ Environment variables loaded from {env_path}")
+except ImportError:
+    print("⚠️ python-dotenv not installed. Install with: pip install python-dotenv")
+
+
+def _env(key: str, default: str = "") -> str:
+    """Shortcut to fetch environment variables with defaults."""
+    return os.getenv(key, default)
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = os.getenv("SECRET_KEY", "test-secret-key-for-django-geoaddress")
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
@@ -30,18 +43,15 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = "tests.urls"
-STATIC_URL = "/static/"
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-USE_TZ = True
-TIME_ZONE = "UTC"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [str(BASE_DIR / "templates")],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -57,8 +67,14 @@ TEMPLATES = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
+        "NAME": "db.sqlite3",
     }
 }
 
-MIGRATION_MODULES = {"tests_app": None}
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = "/static/"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -1,20 +1,22 @@
 from django.db import models
 
 
-class Client(models.Model):
-    name = models.CharField(max_length=100)
+class Country(models.Model):
+    name: str = models.CharField(max_length=100)  # type: ignore[assignment]
 
     def __str__(self) -> str:
         return self.name
 
     class Meta:
         ordering = ["name"]
+        verbose_name = "Country"
+        verbose_name_plural = "Countries"
 
 
-class Company(models.Model):
-    name = models.CharField(max_length=100)
-    owner = models.ForeignKey(
-        Client, on_delete=models.CASCADE, related_name="companies"
+class Alphabet(models.Model):
+    name: str = models.CharField(max_length=100)  # type: ignore[assignment]
+    country: Country = models.ForeignKey(  # type: ignore[assignment]
+        Country, on_delete=models.CASCADE, related_name="alphabets"
     )
 
     def __str__(self) -> str:

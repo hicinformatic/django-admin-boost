@@ -1,10 +1,11 @@
 """Public exports for django-admin-boost."""
 
-from .decorators import admin_boost_object_view
-from .mixins import AdminBoostMixin
+from .admin import AdminBoostModel
+from .decorators import admin_boost_view
 
 __all__ = [
-    "AdminBoostMixin",
-    "admin_boost_object_view",
+    "AdminBoostModel",
+    "admin_boost_view",
 ]
+
 __version__ = "0.1.0"
