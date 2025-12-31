@@ -160,6 +160,8 @@ class AdminBoostModel(ModelAdmin):
                 view = view_generator.generate_admin_custom_json_view(
                     original_method, label, path_fragment, requires_object, permission
                 )
+                view._admin_boost_config["requires_object"] = requires_object
+                view._admin_boost_config["show_in_object_tools"] = True
             else:
                 continue
 

@@ -7,7 +7,7 @@ from typing import Callable
 
 from django.contrib.admin.utils import unquote
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse, HttpResponseBase
+from django.http import HttpResponse, HttpResponseBase, JsonResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
 
@@ -191,64 +191,6 @@ class ViewGenerator:
         }
         return wrapper
 
-    def _generate_admin_custom_json_view(
-        self,
-        view_func: Callable,
-        label: str,
-        template_name: str = "admin_boost/json.html",
-        path_fragment: str | None = None,
-        requires_object: bool = False,
-        permission: str = "view",
-    ) -> Callable:
-        def json_wrapper(request, object_id=None, *args, **kwargs):
-            obj, redirect = self._check_permissions(
-                request, object_id if requires_object else None
-            )
-            if redirect:
-                return redirect
-
-            context = self._build_base_context(request, obj)
-            context["title"] = label
-
-            if requires_object:
-                payload = view_func(request, obj, *args, **kwargs)
-            else:
-                payload = view_func(request, *args, **kwargs)
-
-            if isinstance(payload, (HttpResponse, HttpResponseBase)):
-                return payload
-
-            if payload:
-                if isinstance(payload, dict):
-                    context.update(payload)
-                    if "json_custom" in payload:
-                        context["object_json"] = json.dumps(
-                            payload["json_custom"], indent=2, ensure_ascii=False
-                        )
-                    elif "object_json" in payload:
-                        context["object_json"] = json.dumps(
-                            payload["object_json"], indent=2, ensure_ascii=False
-                        )
-                    else:
-                        context["object_json"] = json.dumps(
-                            payload, indent=2, ensure_ascii=False
-                        )
-                else:
-                    context["object_json"] = json.dumps(
-                        payload, indent=2, ensure_ascii=False
-                    )
-
-            request.current_app = self.model_admin.admin_site.name
-            return TemplateResponse(request, template_name, context)
-
-        path_fragment = path_fragment or view_func.__name__.replace("_", "-")
-        json_wrapper._admin_boost_config = {  # type: ignore[attr-defined]
-            "label": label,
-            "path_fragment": path_fragment,
-            "permission": permission,
-        }
-        return json_wrapper
-
     def generate_admin_custom_list_view(
         self,
         view_func: Callable,
@@ -319,20 +261,42 @@ class ViewGenerator:
         self,
         view_func: Callable,
         label: str,
-        template_name: str = "admin_boost/json.html",
+        template_name: str | None = None,
         path_fragment: str | None = None,
         requires_object: bool = False,
         permission: str = "view",
     ) -> Callable:
-        wrapper = self._generate_admin_custom_json_view(
-            view_func, label, template_name, path_fragment, requires_object, permission
-        )
+        import inspect
+        
+        def wrapper(request, object_id=None, *args, **kwargs):
+            obj, redirect = self._check_permissions(
+                request, object_id if requires_object else None
+            )
+            if redirect:
+                return redirect
+
+            # Vérifier la signature de la méthode pour savoir si elle accepte obj
+            sig = inspect.signature(view_func)
+            params = list(sig.parameters.keys())
+            method_accepts_obj = len(params) > 2 and "obj" in params[2:]
+
+            if requires_object and method_accepts_obj:
+                payload = view_func(request, obj, *args, **kwargs)
+            else:
+                payload = view_func(request, *args, **kwargs)
+
+            if isinstance(payload, (HttpResponse, HttpResponseBase)):
+                return payload
+
+            return JsonResponse(payload, safe=False)
+
         path_fragment = path_fragment or view_func.__name__.replace("_", "-")
-        wrapper._admin_boost_config.update(  # type: ignore[attr-defined]
-            {
-                "view_type": "json",
-                "requires_object": requires_object,
-                "show_in_object_tools": True,
-            }
-        )
+        wrapper._admin_boost_config = {  # type: ignore[attr-defined]
+            "label": label,
+            "path_fragment": path_fragment,
+            "permission": permission,
+            "view_type": "json",
+            "requires_object": requires_object,
+            "show_in_object_tools": True,
+        }
         return wrapper
