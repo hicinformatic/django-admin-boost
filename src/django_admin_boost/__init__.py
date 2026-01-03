@@ -8,4 +8,4 @@ __all__ = [
     "admin_boost_view",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
