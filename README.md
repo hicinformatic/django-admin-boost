@@ -1,4 +1,4 @@
-# django-admin-boost
+# django-boosted
 
 Lightweight helpers to extend Django’s admin with extra views, custom forms, and the matching UI affordances (object tools, permissions, standard responses).
 
@@ -11,7 +11,7 @@ Lightweight helpers to extend Django’s admin with extra views, custom forms, a
 ## Installation
 
 ```bash
-pip install django-admin-boost
+pip install django-boosted
 ```
 
 ## Quick start
@@ -19,8 +19,8 @@ pip install django-admin-boost
 ```python
 # app/admin.py
 from django.contrib import admin
-from django_admin_boost.mixins import AdminBoostMixin
-from django_admin_boost.decorators import admin_boost_object_view
+from django_boosted.mixins import AdminBoostMixin
+from django_boosted.decorators import admin_boost_object_view
 from .models import Client
 
 
@@ -47,8 +47,8 @@ The decorator can automatically apply admin widgets (`ForeignKeyRawIdWidget` or 
 from django import forms
 from django.contrib import admin, messages
 from django.shortcuts import redirect
-from django_admin_boost.mixins import AdminBoostMixin
-from django_admin_boost.decorators import admin_boost_object_view
+from django_boosted.mixins import AdminBoostMixin
+from django_boosted.decorators import admin_boost_object_view
 from .models import Company
 
 class SyncFullGroupForm(forms.Form):

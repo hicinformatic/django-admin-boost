@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django.urls import reverse
 
-from django_admin_boost import AdminBoostModel, admin_boost_view
+from django_boosted import AdminBoostModel, admin_boost_view
 
 
 class AlphabetAdmin(AdminBoostModel):

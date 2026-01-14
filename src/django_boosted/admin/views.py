@@ -1,4 +1,4 @@
-"""View generation utilities for django-admin-boost."""
+"""View generation utilities for django-boosted."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Tools methods for django-admin-boost."""
+"""Tools methods for django-boosted."""
 
 from typing import List
 

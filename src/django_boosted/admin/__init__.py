@@ -1,4 +1,4 @@
-"""Admin module for django-admin-boost."""
+"""Admin module for django-boosted."""
 
 from .model import AdminBoostModel
 

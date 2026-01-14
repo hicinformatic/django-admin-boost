@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from django_admin_boost.managers import UrlManager
+from django_boosted.managers import UrlManager
 
 
 class UrlModel(models.Model):

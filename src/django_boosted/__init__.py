@@ -1,5 +1,5 @@
-"""Public exports for django-admin-boost."""
-default_app_config = "django_admin_boost.apps.DjangoAdminBoostConfig"  # noqa: E402
+"""Public exports for django-boosted."""
+default_app_config = "django_boosted.apps.DjangoBoostedConfig"  # noqa: E402
 
 from .admin import AdminBoostModel  # noqa: E402
 from .decorators import admin_boost_view  # noqa: E402

@@ -1,1 +1,1 @@
-"""Test suite for django-admin-boost."""
+"""Test suite for django-boosted."""

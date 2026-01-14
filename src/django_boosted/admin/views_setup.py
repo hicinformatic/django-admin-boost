@@ -1,4 +1,4 @@
-"""Views setup logic for django-admin-boost."""
+"""Views setup logic for django-boosted."""
 
 import inspect
 

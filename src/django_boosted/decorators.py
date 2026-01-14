@@ -1,4 +1,4 @@
-"""Decorators for django-admin-boost."""
+"""Decorators for django-boosted."""
 
 from __future__ import annotations
 

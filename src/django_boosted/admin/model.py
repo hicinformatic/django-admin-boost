@@ -1,4 +1,4 @@
-"""ModelAdmin mixin for django-admin-boost."""
+"""ModelAdmin mixin for django-boosted."""
 
 from __future__ import annotations
 

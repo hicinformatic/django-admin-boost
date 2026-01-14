@@ -1,7 +1,7 @@
 from django import get_version
 from django.contrib import admin
 
-from django_admin_boost import __version__ as admin_boost_version
+from django_boosted import __version__ as admin_boost_version
 
 from ..models import Alphabet, Country
 from .alphabet import AlphabetAdmin

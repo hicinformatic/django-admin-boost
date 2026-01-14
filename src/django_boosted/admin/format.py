@@ -1,4 +1,4 @@
-"""Formatting utilities for django-admin-boost."""
+"""Formatting utilities for django-boosted."""
 
 from django.utils.html import format_html
 
