@@ -51,11 +51,21 @@ def setup_boost_views(self, view_generator: ViewGenerator):
             view._admin_boost_config["show_in_object_tools"] = True  # type: ignore[attr-defined]
         elif view_type == "message":
             view = view_generator.generate_admin_custom_message_view(
-                original_method, label, path_fragment, requires_object, permission
+                original_method,
+                label,
+                template_name,
+                path_fragment,
+                requires_object,
+                permission,
             )
         elif view_type == "json":
             view = view_generator.generate_admin_custom_json_view(
-                original_method, label, path_fragment, requires_object, permission
+                original_method,
+                label,
+                template_name,
+                path_fragment,
+                requires_object,
+                permission,
             )
             view._admin_boost_config["requires_object"] = requires_object  # type: ignore[attr-defined]
             view._admin_boost_config["show_in_object_tools"] = True  # type: ignore[attr-defined]

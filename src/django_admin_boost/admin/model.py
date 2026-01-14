@@ -49,7 +49,7 @@ class AdminBoostModel(ModelAdmin):
                 continue
 
             path_fragment = config.get("path_fragment") or view_name.replace("_", "-")
-            requires_object = config.get("requires_object", True)
+            requires_object = config.get("requires_object", False)
 
             if requires_object:
                 boost_urls.append(
@@ -74,6 +74,11 @@ class AdminBoostModel(ModelAdmin):
             self.change_fieldsets()
         super().__init__(*args, **kwargs)
         view_generator = ViewGenerator(self)
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            func = getattr(attr, "__func__", attr)
+            if hasattr(func, "_admin_boost_view_config"):
+                self.boost_views += (func._admin_boost_view_config["name"],)
         setup_boost_views(self, view_generator)
 
     def changelist_view(self, request, extra_context=None):

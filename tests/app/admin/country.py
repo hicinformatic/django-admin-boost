@@ -1,23 +1,12 @@
-from django import get_version
 from django.contrib import admin
+from django.urls import reverse
 
 from django_admin_boost import AdminBoostModel, admin_boost_view
-from django_admin_boost import __version__ as admin_boost_version
 
-from .models import Alphabet, Country
+from ..forms import AlphabetForm, CountryForm
 
 
 class CountryAdmin(AdminBoostModel):
-    boost_views = [
-        "custom_message_view",
-        "custom_json_view",
-        "custom_list_view",
-        "custom_form_view",
-        "custom_message_object_view",
-        "custom_list_object_view",
-        "custom_json_object_view",
-        "custom_form_object_view",
-    ]
     search_fields = ["name"]
     list_display = [
         "name",
@@ -32,31 +21,57 @@ class CountryAdmin(AdminBoostModel):
 
     @admin.display(description="Success Small")
     def label_link_success_small(self, obj):
-        return self.format_label("Success", "success", size="small", link=True)
+        return self.format_label("Success", "success", size="small")
 
     @admin.display(description="Info Small")
     def label_link_info_small(self, obj):
-        return self.format_label("Info", "info", size="small", link=True)
+        return self.format_label(
+            "Message",
+            "info",
+            size="small",
+            link=reverse(
+                "admin:tests_app_country_custom_message_object_view", args=[obj.pk]
+            ),
+        )
 
     @admin.display(description="Warning Default")
     def label_link_warning_default(self, obj):
-        return self.format_label("Warning", "warning", link=True)
+        return self.format_label(
+            "Json",
+            "warning",
+            link=reverse(
+                "admin:tests_app_country_custom_json_object_view", args=[obj.pk]
+            ),
+        )
 
     @admin.display(description="Danger Default")
     def label_link_danger_default(self, obj):
-        return self.format_label("Danger", "danger", link=True)
+        return self.format_label(
+            "List",
+            "danger",
+            link=reverse(
+                "admin:tests_app_country_custom_list_object_view", args=[obj.pk]
+            ),
+        )
 
     @admin.display(description="Primary Big")
     def label_link_primary_big(self, obj):
-        return self.format_label("Primary", "primary", size="big", link=True)
+        return self.format_label(
+            "Form",
+            "primary",
+            size="big",
+            link=reverse(
+                "admin:tests_app_country_custom_form_object_view", args=[obj.pk]
+            ),
+        )
 
     @admin.display(description="Secondary Big")
     def label_link_secondary_big(self, obj):
-        return self.format_label("Secondary", "secondary", size="big", link=True)
+        return self.format_label("Secondary", "secondary", size="big")
 
     @admin.display(description="Default Big")
     def label_link_default_big(self, obj):
-        return self.format_label("Default", "default", size="big", link=True)
+        return self.format_label("Default", "default", size="big")
 
     @admin_boost_view("message", "Custom Message View")
     def custom_message_view(self, request):
@@ -83,7 +98,7 @@ class CountryAdmin(AdminBoostModel):
 
     @admin_boost_view("form", "Custom Form View")
     def custom_form_view(self, request):
-        return {"form": "This is a custom form view"}
+        return {"form": CountryForm()}
 
     @admin_boost_view("json", "Custom Json Object View")
     def custom_json_object_view(self, request, obj):
@@ -104,28 +119,5 @@ class CountryAdmin(AdminBoostModel):
 
     @admin_boost_view("form", "Custom Form Object View")
     def custom_form_object_view(self, request, obj):
-        return {"form": "This is a custom form object view"}
+        return {"form": AlphabetForm()}
 
-
-class AlphabetAdmin(AdminBoostModel):
-    list_display = ["name", "country", "status_example_1", "status_example_2"]
-    search_fields = ["name", "country__name"]
-    autocomplete_fields = ["country"]
-
-    @admin.display(description="Status Example 1")
-    def status_example_1(self, obj):
-        return self.format_status("django", True)
-
-    @admin.display(description="Status Example 2")
-    def status_example_2(self, obj):
-        return self.format_status("pytest", False)
-
-
-admin.site.register(Country, CountryAdmin)
-admin.site.register(Alphabet, AlphabetAdmin)
-
-admin.site.site_header = (
-    f"Django ({get_version()}) Admin boost ({admin_boost_version}) - Administration"
-)
-admin.site.site_title = f"Django ({get_version()}) Admin boost ({admin_boost_version})"
-admin.site.index_title = "Administration"

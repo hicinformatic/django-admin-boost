@@ -80,28 +80,42 @@ class ViewGenerator:
         requires_object: bool = False,
         permission: str = "view",
     ) -> Callable:
-        def wrapper(request, object_id=None, *args, **kwargs):
-            obj, redirect = self._check_permissions(
-                request, object_id if requires_object else None
-            )
-            if redirect:
-                return redirect
+        if requires_object:
+            def wrapper(request, object_id=None, *args, **kwargs):
+                obj, redirect = self._check_permissions(request, object_id)
+                if redirect:
+                    return redirect
 
-            context = self._build_base_context(request, obj)
-            context["title"] = label
+                context = self._build_base_context(request, obj)
+                context["title"] = label
 
-            if requires_object:
                 payload = view_func(request, obj, *args, **kwargs)
-            else:
+
+                if isinstance(payload, (HttpResponse, HttpResponseBase)):
+                    return payload
+                if payload:
+                    context.update(payload)
+
+                request.current_app = self.model_admin.admin_site.name
+                return TemplateResponse(request, template_name, context)
+        else:
+            def wrapper(request, *args, **kwargs):
+                obj, redirect = self._check_permissions(request, None)
+                if redirect:
+                    return redirect
+
+                context = self._build_base_context(request, obj)
+                context["title"] = label
+
                 payload = view_func(request, *args, **kwargs)
 
-            if isinstance(payload, (HttpResponse, HttpResponseBase)):
-                return payload
-            if payload:
-                context.update(payload)
+                if isinstance(payload, (HttpResponse, HttpResponseBase)):
+                    return payload
+                if payload:
+                    context.update(payload)
 
-            request.current_app = self.model_admin.admin_site.name
-            return TemplateResponse(request, template_name, context)
+                request.current_app = self.model_admin.admin_site.name
+                return TemplateResponse(request, template_name, context)
 
         return wrapper
 
@@ -265,29 +279,32 @@ class ViewGenerator:
         requires_object: bool = False,
         permission: str = "view",
     ) -> Callable:
-        import inspect
 
-        def wrapper(request, object_id=None, *args, **kwargs):
-            obj, redirect = self._check_permissions(
-                request, object_id if requires_object else None
-            )
-            if redirect:
-                return redirect
+        if requires_object:
+            def wrapper(request, object_id=None, *args, **kwargs):
+                obj, redirect = self._check_permissions(request, object_id)
+                if redirect:
+                    return redirect
 
-            # Vérifier la signature de la méthode pour savoir si elle accepte obj
-            sig = inspect.signature(view_func)
-            params = list(sig.parameters.keys())
-            method_accepts_obj = len(params) > 2 and "obj" in params[2:]
-
-            if requires_object and method_accepts_obj:
+                # Si requires_object=True, on passe toujours obj à la méthode
                 payload = view_func(request, obj, *args, **kwargs)
-            else:
+
+                if isinstance(payload, (HttpResponse, HttpResponseBase)):
+                    return payload
+
+                return JsonResponse(payload, safe=False)
+        else:
+            def wrapper(request, *args, **kwargs):
+                obj, redirect = self._check_permissions(request, None)
+                if redirect:
+                    return redirect
+
                 payload = view_func(request, *args, **kwargs)
 
-            if isinstance(payload, (HttpResponse, HttpResponseBase)):
-                return payload
+                if isinstance(payload, (HttpResponse, HttpResponseBase)):
+                    return payload
 
-            return JsonResponse(payload, safe=False)
+                return JsonResponse(payload, safe=False)
 
         path_fragment = path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]

@@ -2,6 +2,7 @@
 # Install qualitybase, providerkit and geoaddress in editable mode for local development
 -e .
 -e ../python-qualitybase
+-e ../django-virtualqueryset
 
 # Include production dependencies
 Django>=3.2

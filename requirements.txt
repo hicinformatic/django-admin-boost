@@ -1,3 +1,4 @@
 # Development dependencies
 # Install qualitybase in editable mode for local development
 qualitybase>=0.1.0
+django-virtualqueryset>=0.1.0

@@ -15,6 +15,7 @@ def admin_boost_view(
 ):
     def decorator(func: Callable) -> Callable:
         func._admin_boost_view_config = {  # type: ignore[attr-defined]
+            "name": func.__name__,
             "view_type": view_type,
             "label": label,
             "template_name": template_name,

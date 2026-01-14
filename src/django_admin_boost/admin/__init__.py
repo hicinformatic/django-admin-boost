@@ -2,4 +2,4 @@
 
 from .model import AdminBoostModel
 
-__all__ = ["AdminBoostModel"]
+__all__ = ["AdminBoostModel",]

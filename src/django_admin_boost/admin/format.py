@@ -52,24 +52,23 @@ def format_label(
         return format_html('<{} class="{}">{}</{}>', tag, css_class, text, tag)
 
 
-def format_status(name: str, status: bool, style: str | None = None) -> str:
+def format_status(
+    name: str, status: bool, style: str | None = None, link: str | None = None
+) -> str:
     icon = "✓" if status else "✗"
     status_class = "success" if status else "error"
-    if style:
-        return format_html(
-            '<span class="boost-status {}" style="{}">{}</span> <code>{}</code>',
-            status_class,
-            style,
-            icon,
-            name,
-        )
-    else:
-        return format_html(
-            '<span class="boost-status {}">{}</span> <code>{}</code>',
-            status_class,
-            icon,
-            name,
-        )
+    tag = "a" if link else "span"
+    return format_html(
+        '<{} href="{}"><span class="boost-status {}" style="{}">{}</span> '
+        '<code>{}</code></{}>',
+        tag,
+        link,
+        status_class,
+        style,
+        icon,
+        name,
+        tag,
+    )
 
 
 def format_with_help_text(html_content: str, help_text: str | None = None) -> str:

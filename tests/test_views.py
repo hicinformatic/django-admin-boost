@@ -1,12 +1,11 @@
 import secrets
 
 import pytest
-from django.contrib.admin.widgets import AutocompleteSelect, ForeignKeyRawIdWidget
 from django.contrib.auth import get_user_model
 from django.test import Client as DjangoClient
 from django.urls import reverse
 
-from tests.app.models import Alphabet, Country
+from tests.app.models import Country
 
 
 @pytest.fixture()
