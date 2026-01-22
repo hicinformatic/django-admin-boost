@@ -3,6 +3,7 @@
 -e .
 -e ../python-qualitybase
 -e ../django-virtualqueryset
+-e ../django-boosted
 
 # Include production dependencies
 Django>=3.2
