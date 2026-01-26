@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Callable
 
 from django.contrib.admin.utils import unquote
@@ -9,6 +10,16 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseBase, JsonResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
+
+
+@dataclass
+class ViewConfig:
+    """Configuration for admin custom views."""
+
+    template_name: str
+    requires_object: bool = False
+    permission: str = "view"
+    path_fragment: str | None = None
 
 
 class ViewGenerator:
@@ -76,11 +87,9 @@ class ViewGenerator:
         self,
         view_func: Callable,
         label: str,
-        template_name: str,
-        requires_object: bool = False,
-        permission: str = "view",
+        config: ViewConfig,
     ) -> Callable:
-        if requires_object:
+        if config.requires_object:
             def wrapper(request, object_id=None, *args, **kwargs):
                 obj, redirect = self._check_permissions(request, object_id)
                 if redirect:
@@ -97,14 +106,14 @@ class ViewGenerator:
                     context.update(payload)
 
                 request.current_app = self.model_admin.admin_site.name
-                return TemplateResponse(request, template_name, context)
+                return TemplateResponse(request, config.template_name, context)
         else:
             def wrapper(request, *args, **kwargs):
-                obj, redirect = self._check_permissions(request, None)
+                _obj, redirect = self._check_permissions(request, None)
                 if redirect:
                     return redirect
 
-                context = self._build_base_context(request, obj)
+                context = self._build_base_context(request, _obj)
                 context["title"] = label
 
                 payload = view_func(request, *args, **kwargs)
@@ -115,7 +124,7 @@ class ViewGenerator:
                     context.update(payload)
 
                 request.current_app = self.model_admin.admin_site.name
-                return TemplateResponse(request, template_name, context)
+                return TemplateResponse(request, config.template_name, context)
 
         return wrapper
 
@@ -123,18 +132,14 @@ class ViewGenerator:
         self,
         view_func: Callable,
         label: str,
-        template_name: str,
-        requires_object: bool = False,
-        permission: str = "view",
+        config: ViewConfig,
     ) -> Callable:
-        wrapper = self._create_view(
-            view_func, label, template_name, requires_object, permission
-        )
-        path_fragment = view_func.__name__.replace("_", "-")
+        wrapper = self._create_view(view_func, label, config)
+        path_fragment = config.path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
             "label": label,
             "path_fragment": path_fragment,
-            "permission": permission,
+            "permission": config.permission,
         }
         return wrapper
 
@@ -142,22 +147,14 @@ class ViewGenerator:
         self,
         view_func: Callable,
         label: str,
-        template_name: str = "admin_boost/change_list.html",
-        path_fragment: str | None = None,
-        permission: str = "view",
+        config: ViewConfig,
     ) -> Callable:
-        wrapper = self._create_view(
-            view_func,
-            label,
-            template_name,
-            requires_object=False,
-            permission=permission,
-        )
-        path_fragment = path_fragment or view_func.__name__.replace("_", "-")
+        wrapper = self._create_view(view_func, label, config)
+        path_fragment = config.path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
             "label": label,
             "path_fragment": path_fragment,
-            "permission": permission,
+            "permission": config.permission,
         }
         return wrapper
 
@@ -165,18 +162,15 @@ class ViewGenerator:
         self,
         view_func: Callable,
         label: str,
-        template_name: str = "admin_boost/change_form.html",
-        path_fragment: str | None = None,
-        permission: str = "view",
+        config: ViewConfig,
     ) -> Callable:
-        wrapper = self._create_view(
-            view_func, label, template_name, requires_object=True, permission=permission
-        )
-        path_fragment = path_fragment or view_func.__name__.replace("_", "-")
+        config.requires_object = True
+        wrapper = self._create_view(view_func, label, config)
+        path_fragment = config.path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
             "label": label,
             "path_fragment": path_fragment,
-            "permission": permission,
+            "permission": config.permission,
         }
         return wrapper
 
@@ -184,37 +178,33 @@ class ViewGenerator:
         self,
         view_func: Callable,
         label: str,
-        template_name: str = "admin_boost/message.html",
-        path_fragment: str | None = None,
-        requires_object: bool = False,
-        permission: str = "view",
+        config: ViewConfig,
     ) -> Callable:
-        wrapper = self._create_view(
-            view_func,
-            label,
-            template_name,
-            requires_object=requires_object,
-            permission=permission,
-        )
-        path_fragment = path_fragment or view_func.__name__.replace("_", "-")
+        wrapper = self._create_view(view_func, label, config)
+        path_fragment = config.path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
             "label": label,
             "path_fragment": path_fragment,
-            "permission": permission,
+            "permission": config.permission,
         }
         return wrapper
 
-    def generate_admin_custom_list_view(
+    def generate_admin_custom_list_view(  # pylint: disable=too-many-arguments
         self,
         view_func: Callable,
         label: str,
+        *,
         template_name: str = "admin_boost/change_list.html",
         path_fragment: str | None = None,
         permission: str = "view",
     ) -> Callable:
-        wrapper = self._generate_admin_custom_list_view(
-            view_func, label, template_name, path_fragment, permission
+        config = ViewConfig(
+            template_name=template_name,
+            path_fragment=path_fragment,
+            permission=permission,
+            requires_object=False,
         )
+        wrapper = self._generate_admin_custom_list_view(view_func, label, config)
         path_fragment = path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
             "label": label,
@@ -226,17 +216,22 @@ class ViewGenerator:
         }
         return wrapper
 
-    def generate_admin_custom_form_view(
+    def generate_admin_custom_form_view(  # pylint: disable=too-many-arguments
         self,
         view_func: Callable,
         label: str,
+        *,
         template_name: str = "admin_boost/change_form.html",
         path_fragment: str | None = None,
         permission: str = "view",
     ) -> Callable:
-        wrapper = self._generate_admin_custom_form_view(
-            view_func, label, template_name, path_fragment, permission
+        config = ViewConfig(
+            template_name=template_name,
+            path_fragment=path_fragment,
+            permission=permission,
+            requires_object=True,
         )
+        wrapper = self._generate_admin_custom_form_view(view_func, label, config)
         path_fragment = path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config = {  # type: ignore[attr-defined]
             "label": label,
@@ -248,18 +243,23 @@ class ViewGenerator:
         }
         return wrapper
 
-    def generate_admin_custom_message_view(
+    def generate_admin_custom_message_view(  # pylint: disable=too-many-arguments
         self,
         view_func: Callable,
         label: str,
+        *,
         template_name: str = "admin_boost/message.html",
         path_fragment: str | None = None,
         requires_object: bool = False,
         permission: str = "view",
     ) -> Callable:
-        wrapper = self._generate_admin_custom_message_view(
-            view_func, label, template_name, path_fragment, requires_object, permission
+        config = ViewConfig(
+            template_name=template_name,
+            path_fragment=path_fragment,
+            requires_object=requires_object,
+            permission=permission,
         )
+        wrapper = self._generate_admin_custom_message_view(view_func, label, config)
         path_fragment = path_fragment or view_func.__name__.replace("_", "-")
         wrapper._admin_boost_config.update(  # type: ignore[attr-defined]
             {
@@ -270,11 +270,12 @@ class ViewGenerator:
         )
         return wrapper
 
-    def generate_admin_custom_json_view(
+    def generate_admin_custom_json_view(  # pylint: disable=too-many-arguments
         self,
         view_func: Callable,
         label: str,
-        template_name: str | None = None,
+        *,
+        _template_name: str | None = None,
         path_fragment: str | None = None,
         requires_object: bool = False,
         permission: str = "view",
@@ -295,7 +296,7 @@ class ViewGenerator:
                 return JsonResponse(payload, safe=False)
         else:
             def wrapper(request, *args, **kwargs):
-                obj, redirect = self._check_permissions(request, None)
+                _obj, redirect = self._check_permissions(request, None)
                 if redirect:
                     return redirect
 

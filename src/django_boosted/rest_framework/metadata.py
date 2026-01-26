@@ -15,7 +15,9 @@ class BoostedRestFrameworkMetadata(SimpleMetadata):
             if isinstance(extra_metadata, dict):
                 field_info.update(extra_metadata)
         # Otherwise check for extra_metadata attribute directly
-        elif hasattr(field, "extra_metadata") and isinstance(field.extra_metadata, dict):
+        elif hasattr(field, "extra_metadata") and isinstance(
+            field.extra_metadata, dict
+        ):
             field_info.update(field.extra_metadata)
         return field_info
 

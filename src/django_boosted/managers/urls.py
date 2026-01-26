@@ -1,7 +1,23 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from django.urls import URLPattern, URLResolver, get_resolver
 from virtualqueryset.managers import VirtualManager  # type: ignore[import-untyped]
+
+
+@dataclass
+class UrlCollectionConfig:
+    """Configuration for URL collection."""
+
+    namespaces: list[str] | None = None
+    app_labels: list[str] | None = None
+
+    def __post_init__(self):
+        if self.namespaces is None:
+            self.namespaces = []
+        if self.app_labels is None:
+            self.app_labels = []
 
 
 class UrlManager(VirtualManager):
@@ -25,11 +41,13 @@ class UrlManager(VirtualManager):
         resolver,
         prefix: str,
         data: list[dict[str, str]],
-        namespaces: list[str] | None = None,
-        app_labels: list[str] | None = None,
+        *,
+        config: UrlCollectionConfig | None = None,
     ) -> None:
-        namespaces = namespaces or []
-        app_labels = app_labels or []
+        if config is None:
+            config = UrlCollectionConfig()
+        namespaces = config.namespaces
+        app_labels = config.app_labels
 
         for pattern in resolver.url_patterns:
             # URLResolver (include)
@@ -43,7 +61,12 @@ class UrlManager(VirtualManager):
                 if app_name:
                     new_app_labels.append(app_name)
                 self._collect_urls(
-                    pattern, new_prefix, data, new_namespaces, new_app_labels
+                    pattern,
+                    new_prefix,
+                    data,
+                    config=UrlCollectionConfig(
+                        namespaces=new_namespaces, app_labels=new_app_labels
+                    ),
                 )
             # URLPattern (view endpoint)
             elif isinstance(pattern, URLPattern):

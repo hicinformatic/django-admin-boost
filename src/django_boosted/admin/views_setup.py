@@ -34,40 +34,58 @@ def setup_boost_views(self, view_generator: ViewGenerator):
         if view_type == "list":
             if requires_object:
                 view = view_generator.generate_admin_custom_form_view(
-                    original_method, label, template_name, path_fragment, permission
+                    original_method,
+                    label,
+                    template_name=template_name,
+                    path_fragment=path_fragment,
+                    permission=permission,
                 )
             else:
                 view = view_generator.generate_admin_custom_list_view(
-                    original_method, label, template_name, path_fragment, permission
+                    original_method,
+                    label,
+                    template_name=template_name,
+                    path_fragment=path_fragment,
+                    permission=permission,
                 )
             view._admin_boost_config["view_type"] = "list"  # type: ignore[attr-defined]
-            view._admin_boost_config["requires_object"] = requires_object  # type: ignore[attr-defined]
+            view._admin_boost_config["requires_object"] = (  # type: ignore[attr-defined]
+                requires_object
+            )
             view._admin_boost_config["show_in_object_tools"] = True  # type: ignore[attr-defined]
         elif view_type == "form":
             view = view_generator.generate_admin_custom_form_view(
-                original_method, label, template_name, path_fragment, permission
+                original_method,
+                label,
+                template_name=template_name,
+                path_fragment=path_fragment,
+                permission=permission,
             )
-            view._admin_boost_config["requires_object"] = requires_object  # type: ignore[attr-defined]
+            view._admin_boost_config["requires_object"] = (  # type: ignore[attr-defined]
+                requires_object
+            )
             view._admin_boost_config["show_in_object_tools"] = True  # type: ignore[attr-defined]
         elif view_type == "message":
             view = view_generator.generate_admin_custom_message_view(
                 original_method,
                 label,
-                template_name,
-                path_fragment,
-                requires_object,
-                permission,
+                template_name=template_name,
+                path_fragment=path_fragment,
+                requires_object=requires_object,
+                permission=permission,
             )
         elif view_type == "json":
             view = view_generator.generate_admin_custom_json_view(
                 original_method,
                 label,
-                template_name,
-                path_fragment,
-                requires_object,
-                permission,
+                _template_name=template_name,
+                path_fragment=path_fragment,
+                requires_object=requires_object,
+                permission=permission,
             )
-            view._admin_boost_config["requires_object"] = requires_object  # type: ignore[attr-defined]
+            view._admin_boost_config["requires_object"] = (  # type: ignore[attr-defined]
+                requires_object
+            )
             view._admin_boost_config["show_in_object_tools"] = True  # type: ignore[attr-defined]
         else:
             continue
