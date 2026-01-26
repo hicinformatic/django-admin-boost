@@ -102,5 +102,3 @@ Run everything via `./service.py dev <command>` or `python dev.py <command>`:
 ## License
 
 MIT — see the `LICENSE` file. Contributions welcome!
-
-
