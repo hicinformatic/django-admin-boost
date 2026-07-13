@@ -86,6 +86,86 @@ The decorator handles:
 - Adding the form to the template context
 - Backward compatibility (if your view doesn't accept a `form` parameter, it won't be passed)
 
+## Global admin views & index panel
+
+Register object-less admin views that reuse the existing view generators
+(`adminform`, `form`, `confirm`, `message`, `list`, `json`, `redirect`) — you only
+write the useful code that returns a form or a context dict, no template needed.
+Registered views are listed in a "Boosted" box on the admin index page, right
+before "Recent actions".
+
+```python
+# app/boosted_views.py  (or app/admin.py)
+from django import forms
+from django.contrib import messages
+from django.urls import reverse
+from django_boosted import admin_boost_global_view
+
+
+class ResyncForm(forms.Form):
+    mode = forms.ChoiceField(choices=[("fast", "Fast"), ("full", "Full")])
+
+
+@admin_boost_global_view("adminform", "Resync all")
+def resync_all(request, form=None):
+    if form is not None:  # valid POST
+        # ... global logic ...
+        messages.success(request, "Resync started")
+        return {"redirect_url": reverse("admin:index")}
+    return {"form": ResyncForm()}
+```
+
+Discovery — the decorator runs only if its module is imported. django-boosted
+imports, at startup:
+- a conventional `boosted_views.py` module in each installed app (auto), and
+- every module listed in `DJANGO_BOOSTED_VIEW_MODULES` (for files outside an app).
+
+```python
+# settings.py
+DJANGO_BOOSTED_VIEW_MODULES = ["myproject.ops.boosted_views"]
+```
+
+Views defined in an app's `admin.py` also work, since Django already imports it.
+
+Options: `path_fragment`, `template_name`, `permission` (a permission codename,
+a `callable(request) -> bool`, or `None` for any staff user), `order`,
+`show_in_index`. Use `register_index_view(label, url, ...)` to add a plain link
+(e.g. `reverse_lazy(...)` to an existing admin view).
+
+`adminform` views render the standard admin change-form "Save" button. To rename
+it, return `save_label` in the context dict:
+
+```python
+@admin_boost_global_view("adminform", "Resync all")
+def resync_all(request, form=None):
+    if form is not None:
+        return {"redirect_url": reverse("admin:index")}
+    return {"form": ResyncForm(), "save_label": "Run resync"}
+```
+
+For several buttons (with a color class each), return `save_buttons`; inspect
+`request.POST` to know which one was pressed. Available classes: `default`,
+`success`, `info`, `warning`, `danger`, `primary`, `secondary`.
+
+```python
+@admin_boost_global_view("adminform", "Resync all")
+def resync_all(request, form=None):
+    if form is not None:
+        if "_full" in request.POST:
+            ...  # full resync
+        return {"redirect_url": reverse("admin:index")}
+    return {
+        "form": ResyncForm(),
+        "save_buttons": [
+            {"name": "_fast", "label": "Fast", "class": "success"},
+            {"name": "_full", "label": "Full", "class": "danger"},
+        ],
+    }
+```
+
+The box is wired via `admin.site.index_template`. If you use a custom `AdminSite`,
+set `index_template = "admin_boost/index.html"` on it.
+
 ## Audit (created_by / updated_by)
 
 1. Add `CurrentUserMiddleware` to `MIDDLEWARE` (after `AuthenticationMiddleware`):

@@ -22,4 +22,21 @@
   {% endfor %}
 {% endblock %}
 
+{% block submit_buttons_bottom %}
+  {% if save_label or save_buttons %}
+  <div class="submit-row">
+    {% if save_label %}
+    <input type="submit" value="{{ save_label }}" class="default" name="_save">
+    {% endif %}
+    {% if save_buttons %}
+    {% for button in save_buttons %}
+    <input type="submit" value="{{ button.label }}" class="{{ button.class|default:'default' }}" name="{{ button.name|default:'_save' }}">
+    {% endfor %}
+    {% endif %}
+  </div>
+  {% else %}
+  {{ block.super }}
+  {% endif %}
+{% endblock %}
+
 

@@ -1,7 +1,12 @@
 """Public exports for django-boosted."""
 default_app_config = "django_boosted.apps.DjangoBoostedConfig"  # noqa: E402
 
-from .admin import AdminBoostModel, AdminBoostFormat  # noqa: E402
+from .admin import (  # noqa: E402
+    AdminBoostFormat,
+    AdminBoostModel,
+    admin_boost_global_view,
+    register_index_view,
+)
 from .decorators import admin_boost_action, admin_boost_view  # noqa: E402
 from .middleware import CurrentUserMiddleware, get_current_user  # noqa: E402
 
@@ -18,6 +23,8 @@ __all__ = [
     "AdminBoostFormat",
     "admin_boost_action",
     "admin_boost_view",
+    "admin_boost_global_view",
+    "register_index_view",
     "AuditMixin",
     "AuditUserField",
     "AuditUserValue",

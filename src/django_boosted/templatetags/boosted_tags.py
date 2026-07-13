@@ -2,7 +2,15 @@
 
 from django import template
 
+from django_boosted.admin.index import get_index_views
+
 register = template.Library()
+
+
+@register.simple_tag(takes_context=True)
+def boosted_index_views(context):
+    """Return the admin index panel entries visible to the current user."""
+    return get_index_views(context.get("request"))
 
 
 @register.filter

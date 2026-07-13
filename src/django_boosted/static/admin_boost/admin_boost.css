@@ -90,6 +90,14 @@
     background-color: #356073;
 }
 
+/* Colored submit buttons for adminform save_buttons */
+.submit-row input.success { background: #198754; color: #fff; }
+.submit-row input.info { background: #0dcaf0; color: #000; }
+.submit-row input.warning { background: #ffc107; color: #000; }
+.submit-row input.danger { background: #dc3545; color: #fff; }
+.submit-row input.primary { background: #205067; color: #fff; }
+.submit-row input.secondary { background: #6c757d; color: #fff; }
+
 .boost-status {
     display: inline-block;
 }

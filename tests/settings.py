@@ -83,3 +83,5 @@ INSTALLED_APPS += [
     "django_boosted",
     "tests.app",
 ]
+
+DJANGO_BOOSTED_VIEW_MODULES = ["tests.global_views"]
