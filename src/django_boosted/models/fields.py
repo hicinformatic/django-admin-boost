@@ -4,7 +4,28 @@ from django.conf import settings
 from django.db import models
 from django.urls import NoReverseMatch, reverse
 
+from django_boosted.forms import RevealWidget
 from django_boosted.middleware.current_user import get_current_user
+
+
+class SecretFieldMixin:
+    """Render the field with a reveal widget (hidden by default, toggleable)."""
+
+    def formfield(self, **kwargs):
+        kwargs.setdefault("widget", RevealWidget)
+        return super().formfield(**kwargs)
+
+
+class SecretCharField(SecretFieldMixin, models.CharField):
+    pass
+
+
+class SecretTextField(SecretFieldMixin, models.TextField):
+    pass
+
+
+class SecretJsonField(SecretFieldMixin, models.JSONField):
+    pass
 
 
 class AuditUserValue(str):

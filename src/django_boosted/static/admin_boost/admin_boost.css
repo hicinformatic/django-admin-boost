@@ -159,3 +159,23 @@
 .confirm-container .submit-row input[type="submit"]:hover {
     opacity: 0.9;
 }
+
+.boost-reveal {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.boost-secret-mask {
+    letter-spacing: 2px;
+    color: #6c757d;
+}
+
+.boost-reveal-toggle {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.boost-reveal-toggle:hover {
+    opacity: 1;
+}

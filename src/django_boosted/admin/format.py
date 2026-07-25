@@ -4,6 +4,34 @@ from django.utils.html import format_html
 from django.templatetags.static import static
 from django.utils.translation import gettext_lazy as _
 
+_REVEAL_JS = (
+    "const w=this.previousElementSibling,"
+    "m=w.querySelector('.boost-secret-mask'),"
+    "v=w.querySelector('.boost-secret-value'),"
+    "s=v.style.display!=='none';"
+    "v.style.display=s?'none':'';"
+    "m.style.display=s?'':'none';"
+)
+
+
+def reveal_html(content, mask="••••••••"):
+    """Wrap read-only content so it is masked by default with a reveal toggle."""
+    return format_html(
+        '<span class="boost-reveal">'
+        '<span class="boost-secret">'
+        '<span class="boost-secret-mask">{}</span>'
+        '<span class="boost-secret-value" style="display:none">{}</span>'
+        '</span>'
+        '<img class="boost-reveal-toggle" src="{}" alt="{}" '
+        'onclick="' + _REVEAL_JS + '">'
+        '</span>',
+        mask,
+        content,
+        static("admin/img/icon-viewlink.svg"),
+        _("Reveal"),
+    )
+
+
 def boolean_icon_html(value):
     """Return the HTML image (admin icon) for a boolean value."""
     is_ok = value == "✓" if isinstance(value, str) else bool(value)
